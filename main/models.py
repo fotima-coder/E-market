@@ -33,6 +33,7 @@ class Category(models.Model):
 class SubCategory(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories',null=True)
 
     def __str__(self):
         return self.name
@@ -49,6 +50,7 @@ class SubCategory(models.Model):
 
             self.slug = slug
         super().save(*args, **kwargs)
+
 
 
 class Seller(models.Model):
