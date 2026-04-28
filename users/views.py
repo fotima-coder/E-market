@@ -70,7 +70,6 @@ class RegisterView(View):
         login(request, user)
         return redirect('register-confirm')
 
-    # Qayta render qilish uchun yordamchi metod (countries ni qayta yuklash uchun)
     def render_with_context(self, request):
         countries = Country.objects.all()
         context = {'countries': countries}

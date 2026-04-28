@@ -1,5 +1,7 @@
+from django.db.models import F
 from django.shortcuts import render,redirect,get_object_or_404
 from django.views import View
+from django.db.models import Count
 
 
 from django.contrib.auth import get_user_model
@@ -48,13 +50,51 @@ class ProductsView(View):
             if query_sub:
                 sub_category = get_object_or_404(SubCategory, slug=query_sub)
                 products = products.filter(sub_category=sub_category)
+            countries = products.filter(country__isnull=False).value_list('country_name',flat=True).distinct()
+
+            keys = request.GET.keys()
+            query_countries= []
+            for key in keys:
+                if key.startswith('country'):
+                    name = request.GET.get(key)
+                    country = get_object_or_404(Country, name=name)
+                    query_countries.append(country)
+
+            if query_countries:
+                products = products.filter(country__in=query_countries)
+
+            query_min = request.GET.get('minPrice')
+            query_max = request.GET.get('maxPrice')
+
+            if query_min:
+                products = products.filter(price__gte=query_min)
+
+            if query_max:
+                products = products.filter(price__lte=query_max)
+
+            query_order = request.GET.get('ordering')
+            if query_order:
+                if query_order == 'trending':
+                    products = products.annotate(order_count=Count('orderitem')).order_by('-order_count')
+                elif query_order == 'popular':
+                    products = products.order_by('-views')
+                elif query_order == 'cheapest':
+                    products = products.order_by('price')
+                else:
+                    products = products.order_by('-created_at')
+
+
+
 
             context = {
                 'products': products,
                 'query_sub': query_sub,
                 'sub_category': sub_category,
                 'query_view': query_view,
+                'countries': countries,
+                'query_order': query_order,
             }
+
 
             if query_view and query_view.lower() == 'large':
                 return render(request, 'products-large.html', context)

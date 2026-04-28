@@ -1,5 +1,6 @@
 import datetime
 
+from cities_light.models import Country
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils.text import slugify
@@ -68,12 +69,13 @@ class Product(models.Model):
     details = models.TextField(blank=True, null=True)
     price = models.FloatField(default=0)
     amount = models.PositiveIntegerField(default=0)
-    country = models.CharField(max_length=100, default="Uzbekistan")
+    country = models.ForeignKey(Country, on_delete=models.CASCADE,blank=True, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE,default=1)
     delivery = models.CharField(max_length=50, blank=True, null=True)
 
     sub_category = models.ForeignKey(SubCategory, on_delete=models.SET_NULL, blank=True, null=True)
     seller = models.ForeignKey(Seller, on_delete=models.SET_NULL, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
